@@ -9,6 +9,7 @@ wheels/
 # Secrets and scripts
 secrets/
 /legacy/sftp_connect.py
+secrets.yaml
 
 # Virtual environments
 .venv

@@ -13,7 +13,7 @@ from shopper_composite import db_connector
 )
 '''
 def test_get_config():
-    result = db_connector.get_config("/Users/casita/code/shopper_composite/secrets/secrets.yaml")
+    result = db_connector.get_config("/home/lcalleja/shopper_composite/secrets.yaml")
     assert result['host'] == 'localhost'
 
 def test_connect():
