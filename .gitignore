@@ -1,0 +1,14 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Secrets and scripts
+secrets/
+/legacy/sftp_connect.py
+
+# Virtual environments
+.venv
