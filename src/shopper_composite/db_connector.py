@@ -1,7 +1,9 @@
+from datetime import date
 import mysql.connector
 import yaml
 import os
 from contextlib import contextmanager
+
 
 '''
 host: "localhost"
@@ -45,3 +47,21 @@ def connect(creds_dict: dict|None = None):
         yield conn
     finally:
         conn.close()
+
+#accepts a connection argument
+def latest_date(conn, table: str) -> date | None:
+    with conn.cursor() as cur:
+        cur.execute(f"SELECT MAX(`date`) FROM `{table}`")
+        return cur.fetchone()[0]
+
+def append(conn, table: str, rows: list[tuple]) -> int:
+    sql = (f"INSERT INTO `{table}` (`date`,`ghfc`,`trial`,`psfc`,`cbfc`,`visitor`) "
+           "VALUES (%s,%s,%s,%s,%s,%s)")
+    try:
+        with conn.cursor() as cur:
+            cur.executemany(sql, rows)
+        conn.commit()
+        return len(rows)
+    except mysql.connector.Error:
+        conn.rollback()
+        raise
