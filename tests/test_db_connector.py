@@ -1,5 +1,6 @@
 import pytest
 from shopper_composite import db_connector
+import datetime as date
 
 
 '''
@@ -21,3 +22,9 @@ def test_connect():
         assert conn is not None
         assert conn.is_connected()
         
+
+def test_assembly():
+    with db_connector.connect() as conn:
+        latest_date = db_connector.latest_date(conn, "shopping_log")
+        assert latest_date is not None
+        assert isinstance(latest_date, date)

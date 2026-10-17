@@ -48,15 +48,31 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'propagate': True,
+            'propagate': True
         },
         'shopper_composite.cli': {
             'handlers': ['to_file'],
             'level': 'ERROR',
-            'propagate': False,
+            'propagate': False
+        },
+        'shopper_composite.db_connector': {
+            'handlers': ['to_file'],
+            'level': 'ERROR',
+            'propagate': False
+        },
+        'shopper_composite.fetch': {
+            'handlers': ['to_file'],
+            'level': 'ERROR',
+            'propagate': False
+        },
+        'main': {
+            'handlers': ['to_file'],
+            'level': 'ERROR',
+            'propagate': False
         }
     }
 }
+
 
 
 if __name__ == '__main__':

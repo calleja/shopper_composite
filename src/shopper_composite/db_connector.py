@@ -3,6 +3,9 @@ import mysql.connector
 import yaml
 import os
 from contextlib import contextmanager
+import logging
+
+from shopper_composite.logging_reference import LOGGING
 
 
 '''
@@ -11,6 +14,8 @@ user: "lcalleja2"
 password: 30598
 database: "membership_ard"
 '''
+
+logger = logging.getLogger(__name__)
 
 def get_config(yaml_file: str):
     if yaml_file is None:
@@ -42,7 +47,11 @@ def get_config(yaml_file: str):
 def connect(creds_dict: dict|None = None):
     if creds_dict is None:
         creds_dict = get_config("/home/lcalleja/shopper_composite/secrets.yaml")
-    conn = mysql.connector.connect(host=creds_dict['host'], port=creds_dict['port'], user=creds_dict['user'], password=creds_dict['password'], database=creds_dict['database'])
+    try:
+        conn = mysql.connector.connect(host=creds_dict['host'], port=creds_dict['port'], user=creds_dict['user'], password=creds_dict['password'], database=creds_dict['database'])
+    except mysql.connector.Error:
+        logger.exception("connection failure in connect() funct")
+        raise
     try:
         yield conn
     finally:
@@ -50,9 +59,13 @@ def connect(creds_dict: dict|None = None):
 
 #accepts a connection argument
 def latest_date(conn, table: str) -> date | None:
-    with conn.cursor() as cur:
-        cur.execute(f"SELECT MAX(`date`) FROM `{table}`")
-        return cur.fetchone()[0]
+    try:
+        with conn.cursor() as cur:
+            cur.execute(f"SELECT MAX(`date`) FROM `{table}`")
+            return cur.fetchone()[0]
+    except mysql.connector.Error:
+        logger.exception("latest_date retrieval failed for %s", table)
+        raise
 
 def append(conn, table: str, rows: list[tuple]) -> int:
     sql = (f"INSERT INTO `{table}` (`date`,`ghfc`,`trial`,`psfc`,`cbfc`,`visitor`) "
@@ -63,5 +76,8 @@ def append(conn, table: str, rows: list[tuple]) -> int:
         conn.commit()
         return len(rows)
     except mysql.connector.Error:
+        logger.exception("append failed: %d rows for %s", len(rows), table)
         conn.rollback()
         raise
+
+
