@@ -1,11 +1,11 @@
-from datetime import date
+from datetime import date, datetime
 import mysql.connector
 import yaml
 import os
 from contextlib import contextmanager
 import logging
 
-from shopper_composite.logging_reference import LOGGING
+from logging_reference import LOGGING
 
 
 '''
@@ -59,6 +59,7 @@ def connect(creds_dict: dict|None = None):
 
 #accepts a connection argument
 def latest_date(conn, table: str) -> date | None:
+    #the single element will return a datetime.date object of format YYYY-MM-DD
     try:
         with conn.cursor() as cur:
             cur.execute(f"SELECT MAX(`date`) FROM `{table}`")

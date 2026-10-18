@@ -20,11 +20,14 @@ The split() function divides a typical command into the different tokens needed.
 def download(url: str, dest: Path, timeout: int = 60) -> None:
     subprocess.run(["wget", "-q", "-O", str(dest), url], check=True, timeout=timeout)
 
+#%%
+import subprocess
+from pathlib import Path
+
 def download2(dest: Path, start_dt: str, timeout: int = 60) -> None:
     subprocess.run(['wget','-O',str(dest), f'check-in-desk:8888/stats?format=csv&start={start_dt}'], check=True, timeout=timeout)
 
-def run_fetch():
-    download()
+download2(Path('/home/lcalleja/stats.csv'), '2023-01-01')
 
 
 #%%

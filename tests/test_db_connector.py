@@ -25,6 +25,6 @@ def test_connect():
 
 def test_assembly():
     with db_connector.connect() as conn:
-        latest_date = db_connector.latest_date(conn, "shopping_log")
+        latest_date = db_connector.latest_date(conn, "shopper_log")
         assert latest_date is not None
-        assert isinstance(latest_date, date)
+        assert isinstance(latest_date, date.date)
