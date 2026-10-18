@@ -5,6 +5,7 @@ from pathlib import Path
 from shopper_composite import db_connector
 from logging_reference import LOGGING
 from shopper_composite import fetch
+from shopper_composite import transform
 
 '''
 1. Grab the latest date from the db
@@ -31,9 +32,14 @@ def main():
         except AttributeError:
             logger.exception("Latest date is not a datetime.date object")
             raise
+        #download the csv to the path location on the server
         fetch.download2(Path(path_str), latest)
-        #db_connector.append(conn, "membership_ard", rows)
-        return latest_str
+
+        #a list of dictionaries bearing key names of table column names
+        rows = transform.transform_rows(path_str, after=latest)
+        if rows:
+            rows_written =db_connector.append(conn, TABLE, rows)
+        return rows_written
 
 
 if __name__ == "__main__":

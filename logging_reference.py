@@ -65,6 +65,11 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': False
         },
+        'shopper_composite.transform': {
+            'handlers': ['to_file'],
+            'level': 'ERROR',
+            'propagate': False
+        },
         'main': {
             'handlers': ['to_file'],
             'level': 'ERROR',

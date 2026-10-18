@@ -34,7 +34,7 @@ def download2(dest: Path, start_dt: str, timeout: int = 60) -> None:
         raise
 
 
-download2(Path('/home/lcalleja/stats_mini.csv'), '2026-10-13')
+#download2(Path('/home/lcalleja/stats_mini.csv'), '2026-10-13')
 
 
 
