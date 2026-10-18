@@ -5,8 +5,6 @@ import os
 from contextlib import contextmanager
 import logging
 
-from logging_reference import LOGGING
-
 
 '''
 host: "localhost"

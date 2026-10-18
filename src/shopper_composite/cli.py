@@ -1,8 +1,9 @@
 import logging.config
 import datetime as date
+from pathlib import Path
 
 from shopper_composite import db_connector
-from shopper_composite.logging_reference import LOGGING
+from logging_reference import LOGGING
 from shopper_composite import fetch
 
 '''
@@ -14,6 +15,7 @@ from shopper_composite import fetch
 
 '''
 TABLE = 'shopper_log'
+path_str = '/home/lcalleja/stats.csv'
 
 def main():
     logging.config.dictConfig(LOGGING)
@@ -29,14 +31,10 @@ def main():
         except AttributeError:
             logger.exception("Latest date is not a datetime.date object")
             raise
-        fetch.download2(Path('/home/lcalleja/stats.csv'), latest)
+        fetch.download2(Path(path_str), latest)
         #db_connector.append(conn, "membership_ard", rows)
-        print(latest)
+        return latest_str
 
-        
-
-    url = fetch.build_url(BASE_URL, latest)
-    fetch.download(url, dest)
 
 if __name__ == "__main__":
     main()
