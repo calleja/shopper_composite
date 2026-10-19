@@ -52,6 +52,10 @@ commit it so the schedule is versioned.
    ```bash
    cd /home/lcalleja/shopper_composite && uv run shopper-ingest; echo "exit=$?"
    ```
+   *If need be, remove some records from the current table:
+   ```
+   DELETE FROM shopper_log WHERE date > date("2026-08-01");
+   ```
 
    Expect `exit=0`. Then confirm in MySQL: `SELECT MAX(date) FROM shopper_log;`.
 
@@ -63,6 +67,7 @@ commit it so the schedule is versioned.
 
    Typically `/home/lcalleja/.local/bin/uv`. If different, edit the path in
    `deploy/crontab.example` before installing.
+   **actual**: /home/lcalleja/.local/bin/uv
 
 ## Install the crontab
 
