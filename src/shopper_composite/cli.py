@@ -1,56 +1,72 @@
+"""Command-line entry point for the daily check-in ingest."""
+
 import logging.config
-import datetime as date
+import sys
+from argparse import ArgumentParser
+from datetime import date
 from pathlib import Path
 
-from shopper_composite import db_connector
-from logging_reference import LOGGING
-from shopper_composite import fetch
-from shopper_composite import transform
+from shopper_composite import db_connector, fetch, transform
+from shopper_composite.logging_reference import LOGGING
 
 '''
 1. Grab the latest date from the db
 2. compose the report command for plum
 3. execute that command on the command line of radish
-3. conduct any ETL necessary
-4. insert records into db (radish)
-
+4. conduct any ETL necessary
+5. insert records into db (radish)
 '''
-TABLE = 'shopper_log'
-path_str = '/home/lcalleja/stats.csv'
 
-def main():
+
+def build_parser() -> ArgumentParser:
+    p = ArgumentParser(
+        prog="shopper-ingest",
+        description="Fetch check-in stats from plum and upsert into shopper_log.",
+    )
+    p.add_argument(
+        "--download-path",
+        type=Path,
+        default=Path("/home/lcalleja/stats.csv"),
+        help="where wget writes the plum CSV",
+    )
+    p.add_argument(
+        "--secrets",
+        type=Path,
+        default=Path("/home/lcalleja/shopper_composite/secrets.yaml"),
+        help="YAML with host/user/password/database/port",
+    )
+    p.add_argument("--table", default="shopper_log", help="destination table")
+    p.add_argument(
+        "--start",
+        type=date.fromisoformat,
+        default=date(2023, 2, 3),
+        help="start date used only when the table is empty (YYYY-MM-DD)",
+    )
+    return p
+
+
+def main() -> int:
+    args = build_parser().parse_args()
     logging.config.dictConfig(LOGGING)
     logger = logging.getLogger(__name__)
 
-    #connect() is a context manager object, and is only instantiated inside a "with" statement - this is done here; `latest_date()` has its own with block to handle a cursor object
+    creds = db_connector.get_config(str(args.secrets))
+    # connect() is a context manager; latest_date() has its own with block for the cursor
+    with db_connector.connect(creds) as conn:
+        latest = db_connector.latest_date(conn, args.table)
+        start = latest if latest is not None else args.start
+        start_str = start.isoformat()
 
-    with db_connector.connect() as conn:
-        latest = db_connector.latest_date(conn, TABLE)
-        #assume that max_date will be captured as a datetime.date; convert to string
-        try:
-            latest_str = latest.strftime("%Y-%m-%d")
-        except AttributeError:
-            logger.exception("Latest date is not a datetime.date object")
-            raise
-        #download the csv to the path location on the server
-        fetch.download2(Path(path_str), latest)
+        fetch.download2(args.download_path, start_str)
 
-        #a list of dictionaries bearing key names of table column names
-        rows = transform.transform_rows(path_str, after=latest)
+        rows = transform.transform_rows(args.download_path, after=latest)
+        rows_written = 0
         if rows:
-            rows_written =db_connector.append(conn, TABLE, rows)
-        return rows_written
+            rows_written = db_connector.append(conn, args.table, rows)
+            logger.debug("wrote %d rows to %s", rows_written, args.table)
+
+    return 0
 
 
 if __name__ == "__main__":
-    main()
-
-def format_latest(latest: date) -> str:
-    try: 
-        if latest is None:
-            raise ValueError("No latest date propogated to main")
-    except ValueError:
-        logger.exception("No latest date propogated to main")
-        raise
-
-    return latest.strftime("%Y-%m-%d")
+    sys.exit(main())

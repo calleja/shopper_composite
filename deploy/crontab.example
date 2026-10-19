@@ -1,0 +1,5 @@
+# shopper_composite daily ingest. Runs 02:15 radish local time (check: timedatectl).
+# cron's PATH is minimal, so uv is given by absolute path (confirm with: which uv).
+SHELL=/bin/bash
+MAILTO=""
+15 2 * * * cd /home/lcalleja/shopper_composite && /home/lcalleja/.local/bin/uv run shopper-ingest >> /home/lcalleja/shopper_composite/logs/cron.out 2>&1

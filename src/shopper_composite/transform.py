@@ -30,8 +30,8 @@ def transform_rows(csv_path: str | Path, after: date | None = None) -> list[tupl
         for lineno, rec in enumerate(csv.DictReader(f), start=2):  # line 1 is the header
             try:
                 d = date.fromisoformat(rec["date"].strip())
-                if after is not None and d <= after:
-                    continue                                    # skip existing rows
+                if after is not None and d < after:
+                    continue                                    # skip older rows; re-keep `after` for upsert
                 rows.append((d, *(_to_smallint(rec[c]) for c in INT_COLS)))
             except (ValueError, KeyError):
                 logger.exception("bad row at line %d: %r", lineno, rec)

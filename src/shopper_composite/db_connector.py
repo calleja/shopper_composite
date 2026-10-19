@@ -67,8 +67,14 @@ def latest_date(conn, table: str) -> date | None:
         raise
 
 def append(conn, table: str, rows: list[tuple]) -> int:
+    # ON DUPLICATE KEY UPDATE refreshes the latest stored day when plum revises it.
+    # Relies on `date UNIQUE KEY`. VALUES() is deprecated in MySQL 8.0.20+ but still
+    # works there and on MariaDB; return len(rows) because rowcount is 2 per update.
     sql = (f"INSERT INTO `{table}` (`date`,`ghfc`,`trial`,`psfc`,`cbfc`,`visitor`) "
-           "VALUES (%s,%s,%s,%s,%s,%s)")
+           "VALUES (%s,%s,%s,%s,%s,%s) "
+           "ON DUPLICATE KEY UPDATE "
+           "`ghfc`=VALUES(`ghfc`), `trial`=VALUES(`trial`), `psfc`=VALUES(`psfc`), "
+           "`cbfc`=VALUES(`cbfc`), `visitor`=VALUES(`visitor`)")
     try:
         with conn.cursor() as cur:
             cur.executemany(sql, rows)
