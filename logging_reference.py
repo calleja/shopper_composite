@@ -77,10 +77,3 @@ LOGGING = {
         }
     }
 }
-
-
-
-if __name__ == '__main__':
-    logging.config.dictConfig(LOGGING)
-    logging.debug('hello')
-    logging.debug('hello - noshow')
